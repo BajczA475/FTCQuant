@@ -1,0 +1,12 @@
+Package: freezethaw
+Title: Provides Tools for Quantification and Visualization of Freeze/Thaw Cycle Number Using Varied Definitions
+Version: 0.0.0.9001
+Authors@R: person("Alex", "Bajcz", email = "Bajcz475@gmail.com", role = c("aut", "cre"))
+Description: This package provides a series of tools to facilitate calculating the number of freeze/thaw cycles that occurred in a study unit, based on a set of time and temperature data. The base function, freze_thaw_count, calculates the number of freeze/thaw cycles that occurred in a specific temperature data set using a paired data/time data set as a reference. This function makes a number of assumptions; interested users should view the help page for this function before using it. Then, the freeze_thaw_sweep function allows users to vary several parameters to effectively simulate the freeze/thaw cycle number calculation under a range of possible definitions. Lastly, the determine_FT function allows you to couple the previous two functions with your data set easily to produce a set of summary data frames that make comparing the output easier. Lastly, a training data set is also included. 
+Depends: R (>= 3.4.2)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Imports: reshape2,
+         tibble
