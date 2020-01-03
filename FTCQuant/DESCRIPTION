@@ -1,0 +1,14 @@
+Package: FTCQuant
+Title: Provides Tools for Quantifying and Visualizing Freeze-Thaw Cycle Number Using Adjustable Criteria
+Version: 0.0.1.1
+Authors@R: person("Alex", "Bajcz", email = "abajcz@drew.edu", role = c("aut", "cre"))
+Description: This package provides a series of tools to facilitate calculating the number of freeze-thaw cycles that occurred in a study unit based on vectors of time and temperature data. The base function, freeze.thaw.count, calculates the number of freeze-thaw cycles (FTCs) that occurred in a specific temperature data set using a paired date-time data set. This function makes a number of assumptions; interested users should view the help page for this function before using it. Then, the freeze.thaw.sweep function allows users to vary several parameters to explore how the number of FTCs differs under a range of possible criteria. Lastly, the freeze.thaw.analysis function allows you to couple the previous two functions to assess how FTC counts vary across both multiple sets of criteria and multiple sets of time and temperature data. Lastly, a training data set is also included from a related publication (Boswell et al. 2020) 
+Depends: R (>= 3.4.3)
+License: None
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Imports: reshape2,
+         tibble,
+         ggplot2,
+         dplyr
