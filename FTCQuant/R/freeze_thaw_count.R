@@ -2,7 +2,7 @@
 #'
 #' This function is designed to take two vectors--a vector of continuous temperature readings and a vector of continuous date-time data--and count the number of freeze-thaw cycles (FTCs) that occurred over the given time period. Purposefully, the function is designed to allow for adjustment of the criteria that define a freeze-thaw cycle. temp.vec and time.vec should usually be from the same data source, but the function will run so long as they are equal in length.
 #' @usage freeze.thaw.count(temp.vec, time.vec, temp.threshold = 0, duration = 1, lower.offset = 0, upper.offset = 0)
-#' @param temp.vec A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. It is assumed that the data are continuous and missing no data. If either assumption is violated, the output data will be inaccurate!
+#' @param temp.vec A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. It is assumed that the data are continuous and missing no data. If either assumption is violated, the output could be inaccurate. In the event that temperature data are missing for certain time steps, insert these time steps and record the temp.vec value as NA. The function will override these NAs for you with the most recent recorded temperature value (however long ago that value was recorded).
 #' @param time.vec A vector of consecutive data-time data corresponding with the temperature data provided to temp.vec. Importantly, the function assumes this data has no missing data internally and that the time steps remain uniform throughout (e.g., the data were recorded every 30 minutes without fail). If either of these assumptions are not satisfied, this function will produce erroneous results, as noted above.
 #' @param temp.threshold A numeric value of length 1 corresponding to the maximum temperature at which the medium in question is considered "frozen." Freeze-thaw cycles will be assumed to be fluctuations about this temperature at a minimum. Defaults to 0  under the assumption the data given to temp.vec are in degrees Celcius but can be switched to any value to accomodate other temperature scales.
 #' @param duration A numeric value of length 1 corresponding to the minimum number of time steps the medium in question must be both "frozen" and "thawed" for a complete freeze-thaw cycle to have occurred. Defaults to 1, as in one time step.
@@ -31,7 +31,16 @@ freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 
   new.vec[which(temp.vec >= temp.threshold + upper.offset)] = 1
   new.vec[which(temp.vec <= temp.threshold - lower.offset)] = -1
   new.vec[which(temp.vec > temp.threshold - lower.offset & temp.vec < temp.threshold + upper.offset)] = 0
-
+  
+  #Update: 1/8/2020. The function was not previously designed to work with missing values (NAs) in the temperature vector. However, this update fixes this. It makes it so that any missing value in the temperature vector is filled in with the previous known value (no matter how many time steps back this value may have been). It also returns an error if the first value of the data set is an NA, which should be unnecessary (just manually eliminate these rows prior to running the function)
+  if(is.na(temp.vec[1])) { break("Do not include a missing value as the first entry in temp.vec") }
+  
+  for(i in 2:length(temp.vec)) {
+    if(is.na(temp.vec[i])) {
+      temp.vec[i] = temp.vec[i-1]
+    }
+  }
+  
   #To simplify the operations even further, the function uses the rle function (run length encoding) to figure out how consecutive runs of each values are contained within the new.vec vector. It then unpacks the runs and their lengths for the rest of the function to work with.
   rle1 = rle(new.vec)
   lengths = rle1$lengths; values = rle1$values
