@@ -7,7 +7,7 @@
 freeze.thaw.count(temp.vec, time.vec, temp.threshold = 0, duration = 1, lower.offset = 0, upper.offset = 0)
 }
 \arguments{
-\item{temp.vec}{A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. It is assumed that the data are continuous and missing no data. If either assumption is violated, the output data will be inaccurate!}
+\item{temp.vec}{A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. It is assumed that the data are continuous and missing no data. If either assumption is violated, the output could be inaccurate. In the event that temperature data are missing for certain time steps, insert these time steps and record the temp.vec value as NA. The function will override these NAs for you with the most recent recorded temperature value (however long ago that value was recorded).}
 
 \item{time.vec}{A vector of consecutive data-time data corresponding with the temperature data provided to temp.vec. Importantly, the function assumes this data has no missing data internally and that the time steps remain uniform throughout (e.g., the data were recorded every 30 minutes without fail). If either of these assumptions are not satisfied, this function will produce erroneous results, as noted above.}
 
