@@ -7,15 +7,15 @@
 freeze.thaw.sweep(temp.vec, time.vec, durations = 1, lower.offsets = 0, thresholds = 0)
 }
 \arguments{
-\item{temp.vec}{A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. These are assumed to be fully continuous and not missing any data not marked by NAs.}
+\item{temp.vec}{A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. These are assumed to be fully continuous and not missing any data not marked by NAs, as described in freeze.thaw.count.}
 
-\item{time.vec}{A vector of consecutive date-time data corresponding with the temperature data provided to temp.vec. Importantly, the function assumes this data has no missing data and that the time steps remain uniform throughout. If either of these assumptions are not satisfied, this function will produce erroneous results.}
+\item{time.vec}{A vector of consecutive date-time data corresponding with the temperature data provided to temp.vec. Importantly, the function assumes these data have no missing data and that the time steps remain uniform throughout. If either of these assumptions are not satisfied, this function will produce erroneous results!}
 
-\item{durations}{A numeric vector length 1 or more corresponding to the minimum numbers of time steps the medium in question must be both "frozen" and "thawed" for in order for a freeze-thaw cycle to have occurred. Defaults to 1 time step.}
+\item{durations}{A numeric vector length 1+ corresponding to the minimum numbers of time steps the medium in question must be both "frozen" and "thawed" in order for a freeze-thaw cycle to have occurred. Defaults to 1 time step.}
 
 \item{lower.offsets}{A numeric vector of length 1 or more corresponding to the extents to which temperature must fall below  the temperature threshold set for the medium in question to be considered "effectively frozen." In other words, the function will not begin checking against the duration length until temperatures reach values  below those specified by this argument, relative to the temp.threshold. Defaults to 0, indicating that any detectable drop below the threshold value is sufficient. Note: Values for this argument are to be given as absolute values and should thus always be positive.}
 
-\item{thresholds}{A numeric vector of length 1 or more corresponding to the maximum temperatures at which the medium in question is to be considered "frozen." Freeze-thaw cycles will be assumed to be fluctuations about these temperatures at a minimum. Assumes the temperature data are in Celcius and thus defaults to 0 degrees but the function can operate on any temperature scale.}
+\item{thresholds}{A numeric vector of length 1+ corresponding to the maximum temperatures at which the medium in question is to be considered "frozen." Freeze-thaw cycles will be assumed to be fluctuations about these temperatures at a minimum. Assumes the temperature data are in Celcius and thus defaults to 0 degrees but the function can operate on any temperature scale.}
 }
 \description{
 This function is designed to take two vectors--a vector of continuous temperature readings and a vector of continuous date-time data--and count the number of freeze-thaw cycles (FTCs) that occurred over the time period in question under a range of possible criteria. Specifically, the function allows manipulation of the duration, temp.threshold, and lower.offset arguments of the freeze.thaw.count function. See the documentation for that function for details on its operations.

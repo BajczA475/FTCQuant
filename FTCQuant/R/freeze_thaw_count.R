@@ -1,20 +1,18 @@
 #' Basic freeze-thaw cycle (FTC) counting function
 #'
-#' This function is designed to take two vectors--a vector of continuous temperature readings and a vector of continuous date-time data--and count the number of freeze-thaw cycles (FTCs) that occurred over the given time period. Purposefully, the function is designed to allow for adjustment of the criteria that define a freeze-thaw cycle. temp.vec and time.vec should usually be from the same data source, but the function will run so long as they are equal in length.
+#' This function is designed to take two vectors--a vector of continuous temperature readings (with no gaps) and a vector of continuous date-time data--and count the number of freeze-thaw cycles (FTCs) that occurred over the given time period. Purposefully, the function is designed to allow for adjustment of the criteria that define a freeze-thaw cycle. temp.vec and time.vec should usually be from the same data source, but the function will run so long as they are equal in length.
 #' @usage freeze.thaw.count(temp.vec, time.vec, temp.threshold = 0, duration = 1, lower.offset = 0, upper.offset = 0)
-#' @param temp.vec A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. It is assumed that the data are continuous and missing no data. If either assumption is violated, the output could be inaccurate. In the event that temperature data are missing for certain time steps, insert these time steps and record the temp.vec value as NA. The function will override these NAs for you with the most recent recorded temperature value (however long ago that value was recorded).
-#' @param time.vec A vector of consecutive data-time data corresponding with the temperature data provided to temp.vec. Importantly, the function assumes this data has no missing data internally and that the time steps remain uniform throughout (e.g., the data were recorded every 30 minutes without fail). If either of these assumptions are not satisfied, this function will produce erroneous results, as noted above.
-#' @param temp.threshold A numeric value of length 1 corresponding to the maximum temperature at which the medium in question is considered "frozen." Freeze-thaw cycles will be assumed to be fluctuations about this temperature at a minimum. Defaults to 0  under the assumption the data given to temp.vec are in degrees Celcius but can be switched to any value to accomodate other temperature scales.
+#' @param temp.vec A numeric vector of consecutive temperature readings in which to search for freeze-thaw cycles. It is assumed that the data are continuous and missing no data. If either assumption is violated, the output could be inaccurate! In the event that temperature data are missing for certain time steps, insert these time steps and record the temp.vec value as NA. The function will override any NAs for you with the most recent recorded temperature value (however long ago that value was recorded). Alternatively, these data could be imputed, but the functions do not do this for you.
+#' @param time.vec A vector of consecutive data-time data corresponding with the temperature data provided to temp.vec. Importantly, the function assumes this data has no missing data internally and that the time steps remain uniform throughout (e.g., the data were recorded every 30 minutes without fail). If either of these assumptions is not satisfied, this function will produce erroneous results, as noted above.
+#' @param temp.threshold A numeric value of length 1 corresponding to the maximum temperature at which the medium in question is considered "frozen." Freeze-thaw cycles will be assumed to be fluctuations about this temperature at a minimum. Defaults to 0under the assumption the data given to temp.vec are in degrees Celcius but can be switched to any value to accommodate other temperature scales.
 #' @param duration A numeric value of length 1 corresponding to the minimum number of time steps the medium in question must be both "frozen" and "thawed" for a complete freeze-thaw cycle to have occurred. Defaults to 1, as in one time step.
-#' @param lower.offset,upper.offset Numeric values each of length 1 corresponding to the extent to which the temperature must fall below (lower.offset) and/or rise above (upper.offset) the temperature threshold set for the medium in question to be considered "effectively thawed" or "effective frozen." In other words, the function will not begin checking against the duration length until temperatures reach values beyond those specified by the lower.offset and upper.offset arguments (in combination with the threshold argument). Both default to 0, indicating that any departure above or below the threshold value is sufficient. Note: Both arguments are to be given as absolute values (deviations from the temperature threshold) and thus should be specificed as positive values.
+#' @param lower.offset,upper.offset Numeric values each of length 1 corresponding to the extent to which the temperature must fall below (lower.offset) and/or rise above (upper.offset) the temperature threshold set for the medium in question to be considered "effectively thawed" or "effective frozen." In other words, the function will not begin checking against the duration length until temperatures reach values beyond those specified by the lower.offset and upper.offset arguments (in combination with the threshold argument). Both default to 0, indicating that any departure above or below the threshold value is sufficient. Note: Both arguments are to be given as absolute values (deviations from the temperature threshold) and thus should be positive.
 #' @keywords freeze thaw cycles temperature time
 #' @export
 #' @examples
 #' freeze.thaw.count()
 
-
 freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 1, lower.offset = 0, upper.offset = 0) {
-  ##This function counts the number of freeze-thaw cycles that occurred in a data set by checking for specific patterns in a consecutive temperature data set. The consecutiveness is key because the function assumes that the data presented are in consecutive chronological order by row with no missing time points. The function takes 6 arguments: temp.vec is a vector of consecutive temperature data (presumably a column from a data set); time.vec is the corresponding time data (used primarily for contextualizing output); temp.threshold is the threshold temperature at which the phase change between frozen/thawed occurs (assumed by default to be 0 degrees C); duration is the length of time (whatever the units of the time.vec are) that the soil needs to be frozen AND thawed for for a complete freeze-thaw cycle to be recorded; and upper.offset/lower.offset are the temperature differences above and below the threshold temperature that the temperature must rise/fall by during the thaw/freeze portions of the cycle for the duration counter to start counting. By default, these are both assumed to be 0 degrees--i.e., the soil is considered thawed/frozen if any deviation from the threshold temperature occurs.
 
   #Counters/storage vectors--These are used to track progress and results as they occur. Modifications here could allow for additional output variables to be reported, if desired.
   cycle.count = 0
@@ -26,13 +24,19 @@ freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 
   min.freeze.temp = numeric(0)
 
   #To greatly simplify the operations of the function, it creates a new vector called new.vec that recodes the temp.vec vector. It converts the temp.vec to only 0s, 1s, and -1s for rows that are transitional, effectively thawed, and effectively frozen, respectively, with these three regions defined by the temp.threshold, lower.offset, and upper.offset arguments.
+  
+  #Update 7/8/21: Apparently, if data are loaded as tibbles instead of data frames, the code below breaks because it expects the data to be vectors (and thus have just one dimention), so I need to coerce the data to a vector here in that case.
+  
+  if(tibble::is_tibble(temp.vec)) {
+  temp.vec = dplyr::pull(temp.vec)
+  } 
   new.vec = temp.vec
-
+  
   new.vec[which(temp.vec >= temp.threshold + upper.offset)] = 1
   new.vec[which(temp.vec <= temp.threshold - lower.offset)] = -1
   new.vec[which(temp.vec > temp.threshold - lower.offset & temp.vec < temp.threshold + upper.offset)] = 0
   
-  #Update: 1/8/2020. The function was not previously designed to work with missing values (NAs) in the temperature vector. However, this update fixes this. It makes it so that any missing value in the temperature vector is filled in with the previous known value (no matter how many time steps back this value may have been). It also returns an error if the first value of the data set is an NA, which should be unnecessary (just manually eliminate these rows prior to running the function)
+  #Update: 1/8/2020. The function was not previously designed to work with missing values (NAs) in the temperature vector. However, this update fixes this. It makes it so that any missing value in the temperature vector is filled in with the previous known value (no matter how many time steps back this value may have been). It also returns an error if the first value of the data set is an NA, which should be unnecessary (just manually eliminate these rows prior to running the function!)
   if(is.na(temp.vec[1])) { break("Do not include a missing value as the first entry in temp.vec") }
   
   for(i in 2:length(temp.vec)) {
@@ -41,11 +45,11 @@ freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 
     }
   }
   
-  #To simplify the operations even further, the function uses the rle function (run length encoding) to figure out how consecutive runs of each values are contained within the new.vec vector. It then unpacks the runs and their lengths for the rest of the function to work with.
+  #To simplify the operations even further, the function uses the rle function (run length encoding) to figure out the extent to which consecutive runs of each values are contained within the new.vec vector. It then unpacks the runs and their lengths for the rest of the function to work with.
   rle1 = rle(new.vec)
   lengths = rle1$lengths; values = rle1$values
 
-  #Now, the function calculates how many effectively frozen and effectively thawed periods were of sufficient length to be long enough to be count as part of a freeze-thaw cycle given the criteria specified in the function call. It marks each of these as potential "events" that were constituent to a freeze-thaw cycle (internal function logic).
+  #Now, the function calculates how many effectively frozen and effectively thawed periods were of sufficient length to be long enough to be counted as part of a freeze-thaw cycle given the criteria specified in the function call. It marks each of these as potential "events" that were constituent to a freeze-thaw cycle (internal function logic).
   long.freezes = which(lengths >= duration & values == -1)
   long.thaws = which(lengths >= duration & values == 1)
   events = sort(c(long.freezes, long.thaws))
@@ -83,7 +87,7 @@ freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 
       }
     }
 
-    #The number of freeze-thaw cycles is equal to the number of events marked as important with a value of 1 (thaws are marked by a value of 2 instead, so really this is a count of the number of freezes, since every freeze is gauranteed to be part of a F/T cycle at some point, although it should be noted that this may not always be the intention of the end user)
+    #The number of freeze-thaw cycles is equal to the number of events marked as important with a value of 1 (thaws are marked by a value of 2 instead, so really this is a count of the number of freezes, since every freeze is guaranteed to be part of a F/T cycle at some point, although it should be noted that this may not always be the intention of the end user)
     cycle.count = length(which(important==1))
 
     #These next chunks of code generate output measures we thought might be of importance. It's not intended to be an exhaustive list and others should feel free to add to it.
@@ -98,8 +102,7 @@ freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 
     switch.times = numeric((0))
     for(i in switches) { switch.times = c(switch.times, (sum(lengths[1:i-1]))) }
     switch.after = as.character(time.vec[switch.times])
-    if(length(start.vec) != length(switch.after)) { #If the season ends on a freeze with no subsequent thaw, we need to mark
-      #this last switch point as "Unknown."
+    if(length(start.vec) != length(switch.after)) { #If the season ends on a freeze with no subsequent thaw, we need to mark this last switch point as "Unknown."
       switch.after = c(switch.after, "Unknown")
     }
 
@@ -134,6 +137,8 @@ freeze.thaw.count = function(temp.vec, time.vec, temp.threshold = 0, duration = 
     #If there were no freeze periods of sufficient length in the data set, this is reported as output and the function ends.
   } else {cycle.count = "There are no freeze-thaw cycles in this data set, as these were defined by the input criteria"}
 
-  return(list(temp.threshold = temp.threshold, hemicycle.duration.in.hours = duration/2, number.of.cycles = cycle.count,
-              cycles = data.frame(start.times = start.vec, switch.after = switch.after, end.times = end.vec, freeze.length = freeze.length/2, thaw.length=thaw.length/2, min.freeze.temp = min.freeze.temp)))
+  return(list(number.of.cycles = cycle.count,
+              cycles = data.frame(start.times = start.vec, switch.after = switch.after, 
+                                  end.times = end.vec, freeze.length = freeze.length, 
+                                  thaw.length=thaw.length, min.freeze.temp = min.freeze.temp)))
 }

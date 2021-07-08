@@ -2,9 +2,9 @@
 % Please edit documentation in R/freeze_thaw_analysis.R
 \name{freeze.thaw.analysis}
 \alias{freeze.thaw.analysis}
-\title{Freeze/Thaw cycle parameter sweeping analysis generator}
+\title{Freeze-thaw cycle parameter sweeping analysis}
 \usage{
-freeze_thaw_analysis(data.list, col.start, mag.vec = 0, dur.vec = 1, thres.vec = 0)
+freeze_thaw_analysis(data.list, mag.vec = 0, dur.vec = 1, thres.vec = 0)
 }
 \arguments{
 \item{data.list}{A list, the entries of which are data frames (which need not be named). Each data frame must be structured in a similar manner for the function to operate properly. First, the first column in each must be a column entitled date which contains the date/time information to be passed along to dependent functions. Second, all subsequent columns must contain temperature data, which the function will assume is contemporaneous with those date/time data provided in the date column. It will also assume each column contains temperature data from a single replicable unit.}
@@ -12,7 +12,7 @@ freeze_thaw_analysis(data.list, col.start, mag.vec = 0, dur.vec = 1, thres.vec =
 \item{mag.vec, dur.vec, thres.vec}{Vectors of minimum offsets, durations, and temperature thresholds to pass along to the freeze.thaw.sweep function. See the documentation of that function for more details. Each defaults to an uninformed value of 0 (mag.vec, thres.vec) or 1 (dur.vec).}
 }
 \description{
-This function is designed to automate the process of running the freeze.thaw.sweep function across a series of data sets (e.g., different years worth of data). It also combines the results into a pair of easy to manipulate data frames for further use. See the documentation for freeze.thaw.sweep for more details.
+This function is designed to automate the process of running the freeze.thaw.sweep function across a series of data sets (e.g., different years or plots worth of data). It also combines the results into a pair of easy to manipulate data frames for further use. See the documentation for freeze.thaw.sweep for more details.
 }
 \examples{
 freeze.thaw.analysis()
